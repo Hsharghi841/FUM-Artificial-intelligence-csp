@@ -353,7 +353,14 @@ class FastNonogramSolver:
         def constraint_score(var):
             """Calculate constraint score - higher means more constrained"""
             #TODO: Implement Here!
-            pass
+            score = 0
+            related_constraints = self.problem.get_constraints(var) 
+            
+            for constraint in related_constraints:
+                current_line_values = [v.value for v in constraint.variables]
+                unassigned_count = current_line_values.count(None)
+                
+                score -= unassigned_count
         
         # Sort by most constrained (highest score)
         return max(unassigned, key=constraint_score)
@@ -370,7 +377,33 @@ class FastNonogramSolver:
             List of values ordered by least constraining first
         """
         #TODO: Implement Here!
-        pass
+        scores = []
+        
+        related_constraints = self.problem.get_constraints(var) 
+        
+        for test_value in [0, 1]:
+            var.value = test_value 
+            constraining_score = 0
+            
+            for constraint in related_constraints:
+                current_line_values = [v.value for v in constraint.variables]
+                
+                from Nonogram.NonogramConstraint import NonogramConstraint
+                
+                if isinstance(constraint, NonogramConstraint):
+                    clue = constraint.clue
+                    line_n = len(constraint.variables)
+                    
+                    num_valid_placements = len(self._generate_all_valid_lines(current_line_values, clue, line_n, max_solutions=20)) 
+                    
+                    constraining_score += num_valid_placements
+
+            scores.append((constraining_score, test_value))
+            var.value = None
+            
+        scores.sort(key=lambda x: x[0], reverse=True) 
+        
+        return [value for score, value in scores]
     
     def _forward_check(self, var: Variable) -> bool:
         """
