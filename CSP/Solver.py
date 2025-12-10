@@ -51,7 +51,6 @@ class Solver:
         Returns:
             bool: True if the problem has been solved, False otherwise.
         """
-        print('strat backtrack')
         if self.is_finished():
             return True
         var = self.problem.get_unassigned_variables()[0]

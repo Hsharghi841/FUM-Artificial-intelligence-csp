@@ -17,6 +17,7 @@ class NonogramProblem(Problem):
         """
         super().__init__([], [], "Dolphin Nonogram (25x25)")
         self._init_dolphin_25x25()
+
     
     def _init_dolphin_25x25(self):
         """Initialize the full 25x25 dolphin puzzle."""
@@ -86,24 +87,34 @@ class NonogramProblem(Problem):
     
     def _create_grid_and_constraints(self, row_clues, column_clues):
         """Create the grid variables and constraints."""
+
         self.grid = []
         for row in range(self.rows):
             row_vars = []
             for col in range(self.cols):
-                var = Variable( [0, 1],f"Cell_{row}_{col}")
+                # Create variable with domain [0, 1] and name
+                var = Variable([0, 1], f"Cell_{row}_{col}")
                 row_vars.append(var)
-                self.variables.append(var)
             self.grid.append(row_vars)
-        
+
+        self.variables = [var for row in self.grid for var in row]
+
+        row_constraints = []
         for row in range(self.rows):
             row_vars = self.grid[row]
             constraint = NonogramConstraint(row_vars, row_clues[row])
-            self.constraints.append(constraint)
-        
+            row_constraints.append(constraint)
+
+        column_constraints = []
         for col in range(self.cols):
             col_vars = [self.grid[row][col] for row in range(self.rows)]
             constraint = NonogramConstraint(col_vars, column_clues[col])
-            self.constraints.append(constraint)
+            column_constraints.append(constraint)
+
+        self.constraints = row_constraints + column_constraints
+
+
+        self.calculate_neighbors()
     
     def print_board(self):
         """
