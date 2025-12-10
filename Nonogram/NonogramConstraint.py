@@ -61,12 +61,7 @@ class NonogramConstraint(Constraint):
         return placements
 
     def _is_partially_consistent(self, values: List[int]) -> bool:
-        """
-        Check if a partial assignment could potentially satisfy the constraint.
-        This allows for early pruning during search.
-        Optimized version with better pruning.
-        """
-        # TODO: Implement Here! (complete the logic for partial consistency check)
+
 
         if not self.clue:
             return all(v != 1 for v in values)
@@ -85,10 +80,7 @@ class NonogramConstraint(Constraint):
         return self._dp_check_possible(values)
 
     def _dp_check_possible(self, values: List[int]) -> bool:
-        """
-        Use dynamic programming to check if any valid placement exists.
-        Returns True if at least one valid placement is possible.
-        """
+
         n = len(values)
         m = len(self.clue)
 
@@ -125,10 +117,6 @@ class NonogramConstraint(Constraint):
         return dp[n][m]
 
     def _matches_clue(self, values: List[int]) -> bool:
-        """
-        Check if a complete assignment matches the clue exactly.
-        """
-
 
         processed_values = []
         for v in values:
