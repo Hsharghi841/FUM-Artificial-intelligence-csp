@@ -224,16 +224,22 @@ class FastNonogramSolver:
             return False
         
         # Generate all valid completions efficiently
-        definite_filled, definite_empty = #TODO: Implement Here!
+        definite_filled, definite_empty = self._find_definite_cells(current, clue, n)
         
         changed = False
         
         # Assign definite cells
         for idx in definite_filled:
             #TODO: Implement Here!
+            if variables[idx].value is None:
+                variables[idx].value = 1
+                changed = True
         
         for idx in definite_empty:
             #TODO: Implement Here!
+            if variables[idx].value is None:
+                variables[idx].value = 0
+                changed = True
         
         return changed
     
