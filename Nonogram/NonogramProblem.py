@@ -90,7 +90,7 @@ class NonogramProblem(Problem):
         for row in range(self.rows):
             row_vars = []
             for col in range(self.cols):
-                var = Variable(f"Cell_{row}_{col}", [0, 1])
+                var = Variable( [0, 1],f"Cell_{row}_{col}")
                 row_vars.append(var)
                 self.variables.append(var)
             self.grid.append(row_vars)
@@ -99,15 +99,11 @@ class NonogramProblem(Problem):
             row_vars = self.grid[row]
             constraint = NonogramConstraint(row_vars, row_clues[row])
             self.constraints.append(constraint)
-            for var in row_vars:
-                var.add_constraint(constraint)
         
         for col in range(self.cols):
             col_vars = [self.grid[row][col] for row in range(self.rows)]
             constraint = NonogramConstraint(col_vars, column_clues[col])
             self.constraints.append(constraint)
-            for var in col_vars:
-                var.add_constraint(constraint)
     
     def print_board(self):
         """

@@ -20,7 +20,10 @@ class NonogramConstraint(Constraint):
         super().__init__(variables)
         self.clue = clue
         self.line_length = len(variables)
-        self.min_length = sum(clue) + len(clue) - 1
+        if clue:
+            self.min_length = sum(clue) + len(clue) - 1
+        else:
+            self.min_length = 0
     
     def is_satisfied(self) -> bool:
         """
@@ -44,9 +47,6 @@ class NonogramConstraint(Constraint):
             
             return all(v != 1 for v in values)
         
-        
-        if not self.clue:
-            return all(v != 1 for v in values)
     
         line = ''.join(['1' if v == 1 else '0' if v == 0 else '?' for v in values])
         possible_placements = self._generate_possible_placements(len(values), self.clue)
@@ -83,6 +83,9 @@ class NonogramConstraint(Constraint):
             self._generate_placements_recursive(length, clue, clue_idx + 1, next_position, new_current, placements)
     
     def _placement_matches(self, line: str, placement: str) -> bool:
+        if len(line) != len(placement):
+            return False
+            
         for i in range(len(line)):
             if line[i] == '?':
                 continue

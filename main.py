@@ -2,9 +2,10 @@
 
 from CSP.Solver import Solver, FastNonogramSolver
 from States.StatesProblem import StatesProblem
+from Nonogram.NonogramProblem import NonogramProblem
 
 if __name__ == '__main__':
-    states = StatesProblem()
+    states = NonogramProblem()
     s = Solver(states)
     s.solve()
     states.print_assignments()
