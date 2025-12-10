@@ -427,10 +427,12 @@ class FastNonogramSolver:
             return all(c.is_satisfied() for c in self.constraints)
         
         # Select the first unassigned variable
-        var = unassigned[0]
+        # var = unassigned[0]
+        var = self._mrv_select(unassigned)
         
         # Default order
-        ordered_values = [0, 1]
+        # ordered_values = [0, 1]
+        ordered_values = self._lcv_order(var)
         
         # Try values in order
         for value in ordered_values:
