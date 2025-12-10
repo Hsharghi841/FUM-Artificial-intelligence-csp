@@ -281,7 +281,32 @@ class FastNonogramSolver:
         def place_blocks(pos, clue_idx, line):
             """Recursively place blocks"""
             #TODO: Implement Here! (complete the logic for placing blocks recursively)
-        
+            if len(clue) == clue_idx:
+                for i in range(pos, n): line[i] = 0
+                valid_lines.append(line)
+                return True
+            
+            remaining_clues = clue[clue_idx:]
+            min_required_space = sum(remaining_clues) + len(remaining_clues) - 1
+
+            if n - pos < min_required_space:
+                return False
+            
+            max_start = n - min_required_space + 1
+
+            for start_pos in range(pos, max_start):
+                new_line = list(line)
+
+                for i in range(pos, start_pos):
+                    new_line[i] = 0
+
+                for i in range(start_pos, start_pos + clue[clue_idx]):
+                    new_line[i] = 1
+
+                if start_pos + clue[clue_idx] != n: new_line[start_pos + clue[clue_idx]] = 0
+                
+                place_blocks(start_pos + clue[clue_idx] + 1, clue_idx + 1, new_line)
+
         place_blocks(0, 0, [None] * n) 
         return valid_lines
     
