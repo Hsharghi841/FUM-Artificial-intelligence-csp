@@ -282,19 +282,42 @@ class FastNonogramSolver:
             """Recursively place blocks"""
             #TODO: Implement Here! (complete the logic for placing blocks recursively)
             if len(clue) == clue_idx:
+                for i in range(pos, n):
+                    if current[i] == 1:
+                        is_valid = False
+                        return 
+
                 for i in range(pos, n): line[i] = 0
                 valid_lines.append(line)
-                return True
+                return 
             
             remaining_clues = clue[clue_idx:]
             min_required_space = sum(remaining_clues) + len(remaining_clues) - 1
 
             if n - pos < min_required_space:
-                return False
+                return 
             
             max_start = n - min_required_space + 1
 
             for start_pos in range(pos, max_start):
+
+                is_compatible = True
+
+                for i in range(start_pos, start_pos + clue[clue_idx]):
+                    if current[i] == 0:
+                        is_compatible = False
+                        break
+                if not is_compatible: continue
+                
+                for i in range(pos, start_pos):
+                    if current[i] == 1:
+                        is_compatible = False
+                        break
+                if not is_compatible: continue
+
+                if start_pos + clue[clue_idx] != n and current[start_pos + clue[clue_idx]] == 1: continue
+
+
                 new_line = list(line)
 
                 for i in range(pos, start_pos):
