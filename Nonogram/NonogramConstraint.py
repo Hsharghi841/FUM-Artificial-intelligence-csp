@@ -64,7 +64,7 @@ class NonogramConstraint(Constraint):
         """
         Check if a partial assignment could potentially satisfy the constraint.
         This allows for early pruning during search.
-        Optimized version that checks basic consistency without generating all placements.
+        Optimized version with better pruning.
         """
         # TODO: Implement Here! (complete the logic for partial consistency check)
 
@@ -80,55 +80,60 @@ class NonogramConstraint(Constraint):
         if filled_count > total_filled_needed:
             return False
 
-        # 2. Check if we have too many empty cells in wrong places
-        # (This is a simplified check - full implementation would be more complex)
+        # 2. Check if we have too many empty cells that would prevent fitting all blocks
+        empty_count = sum(1 for v in values if v == 0)
+        total_empty_needed = self.line_length - total_filled_needed
+        if empty_count > total_empty_needed:
+            return False
 
-        # 3. Check pattern consistency
-        return self._check_pattern_consistency(values)
+        # 3. Use dynamic programming to check if any valid placement exists
+        return self._dp_check_possible(values)
 
-    def _check_pattern_consistency(self, values: List[int]) -> bool:
+    def _dp_check_possible(self, values: List[int]) -> bool:
         """
-        Check if the current pattern could possibly match the clue.
+        Use dynamic programming to check if any valid placement exists.
+        Returns True if at least one valid placement is possible.
         """
-        # Group the values into blocks
-        groups = []
-        current_group = 0
-        in_group = False
+        n = len(values)
+        m = len(self.clue)
 
-        for v in values:
-            if v == 1:
-                if not in_group:
-                    in_group = True
-                    current_group = 1
-                else:
-                    current_group += 1
-            elif v == 0:
-                if in_group:
-                    groups.append(current_group)
-                    in_group = False
-                    current_group = 0
-            else:  # v is None (unknown)
-                # Unknown cell - we can't determine group boundaries definitively
-                # So we need to be more flexible
-                if in_group:
-                    # Could continue the group or end it
-                    current_group += 1  # Assume it continues for now
-                # else: could start a group or remain empty
+        # DP table: dp[i][j] = can we place first j blocks in first i cells?
+        dp = [[False] * (m + 1) for _ in range(n + 1)]
+        dp[0][0] = True
 
-        # Handle last group if we ended in one
-        if in_group:
-            groups.append(current_group)
+        for i in range(n + 1):
+            for j in range(m + 1):
+                if not dp[i][j]:
+                    continue
 
-        # Check if the groups we found are compatible with the clue
-        # We can't reject based on number of groups because unknown cells
-        # might create new groups or merge existing ones
+                # Case 1: Place 0 (empty) at position i
+                if i < n and values[i] != 1:  # Can't place 0 if cell is forced to be 1
+                    dp[i + 1][j] = True
 
-        # Check each group against corresponding clue
-        for i in range(min(len(groups), len(self.clue))):
-            if groups[i] > self.clue[i]:
-                return False
+                # Case 2: Place a block starting at position i
+                if j < m and i < n and values[i] != 0:  # Can't start block if cell is forced to be 0
+                    block_len = self.clue[j]
 
-        return True
+                    # Check if we can place block of length block_len starting at i
+                    can_place = True
+                    for k in range(block_len):
+                        if i + k >= n:
+                            can_place = False
+                            break
+                        if values[i + k] == 0:  # Can't place block if any cell is forced to be 0
+                            can_place = False
+                            break
+
+                    if can_place:
+                        # Check if we need a separator after the block
+                        next_pos = i + block_len
+                        if j == m - 1:  # Last block
+                            # No need for separator, but check if remaining cells can be empty
+                            dp[next_pos][j + 1] = True
+                        elif next_pos < n and values[next_pos] != 1:  # Need at least one empty separator
+                            dp[next_pos + 1][j + 1] = True
+
+        return dp[n][m]
 
     def _matches_clue(self, values: List[int]) -> bool:
         """
@@ -136,28 +141,31 @@ class NonogramConstraint(Constraint):
         """
         # TODO: Implement Here! (complete the logic for matching the clue)
 
-        # Convert to string for easier processing
-        line_str = ''.join(['1' if v == 1 else '0' for v in values])
-
-        # If no clue, line should be all 0s
-        if not self.clue:
-            return all(v == 0 for v in values)
-
-        # Split by one or more zeros to get groups of ones
-        groups = []
-        current_group = 0
-
+        # Convert values to list of 0/1 (None should not exist in complete assignment)
+        processed_values = []
         for v in values:
+            if v is None:
+                return False  # Incomplete assignment
+            processed_values.append(v)
+
+        # If no clue, all cells should be empty (0)
+        if not self.clue:
+            return all(v == 0 for v in processed_values)
+
+        # Find consecutive blocks of 1s
+        blocks = []
+        current_block = 0
+
+        for v in processed_values:
             if v == 1:
-                current_group += 1
-            elif v == 0:
-                if current_group > 0:
-                    groups.append(current_group)
-                    current_group = 0
+                current_block += 1
+            elif current_block > 0:
+                blocks.append(current_block)
+                current_block = 0
 
-        # Don't forget the last group
-        if current_group > 0:
-            groups.append(current_group)
+        # Don't forget the last block
+        if current_block > 0:
+            blocks.append(current_block)
 
-        # Check if groups match the clue exactly
-        return groups == self.clue
+        # Check if blocks match the clue
+        return blocks == self.clue
