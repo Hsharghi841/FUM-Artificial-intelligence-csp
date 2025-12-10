@@ -68,25 +68,20 @@ class NonogramConstraint(Constraint):
         """
         # TODO: Implement Here! (complete the logic for partial consistency check)
 
-        # If no clue, no filled cells allowed
         if not self.clue:
             return all(v != 1 for v in values)
 
-        # Quick checks for obvious violations
 
-        # 1. Check if we have too many filled cells
         filled_count = sum(1 for v in values if v == 1)
         total_filled_needed = sum(self.clue)
         if filled_count > total_filled_needed:
             return False
 
-        # 2. Check if we have too many empty cells that would prevent fitting all blocks
         empty_count = sum(1 for v in values if v == 0)
         total_empty_needed = self.line_length - total_filled_needed
         if empty_count > total_empty_needed:
             return False
 
-        # 3. Use dynamic programming to check if any valid placement exists
         return self._dp_check_possible(values)
 
     def _dp_check_possible(self, values: List[int]) -> bool:
@@ -97,7 +92,6 @@ class NonogramConstraint(Constraint):
         n = len(values)
         m = len(self.clue)
 
-        # DP table: dp[i][j] = can we place first j blocks in first i cells?
         dp = [[False] * (m + 1) for _ in range(n + 1)]
         dp[0][0] = True
 
@@ -106,31 +100,26 @@ class NonogramConstraint(Constraint):
                 if not dp[i][j]:
                     continue
 
-                # Case 1: Place 0 (empty) at position i
-                if i < n and values[i] != 1:  # Can't place 0 if cell is forced to be 1
+                if i < n and values[i] != 1:
                     dp[i + 1][j] = True
 
-                # Case 2: Place a block starting at position i
-                if j < m and i < n and values[i] != 0:  # Can't start block if cell is forced to be 0
+                if j < m and i < n and values[i] != 0:
                     block_len = self.clue[j]
 
-                    # Check if we can place block of length block_len starting at i
                     can_place = True
                     for k in range(block_len):
                         if i + k >= n:
                             can_place = False
                             break
-                        if values[i + k] == 0:  # Can't place block if any cell is forced to be 0
+                        if values[i + k] == 0:
                             can_place = False
                             break
 
                     if can_place:
-                        # Check if we need a separator after the block
                         next_pos = i + block_len
-                        if j == m - 1:  # Last block
-                            # No need for separator, but check if remaining cells can be empty
+                        if j == m - 1:
                             dp[next_pos][j + 1] = True
-                        elif next_pos < n and values[next_pos] != 1:  # Need at least one empty separator
+                        elif next_pos < n and values[next_pos] != 1:
                             dp[next_pos + 1][j + 1] = True
 
         return dp[n][m]
@@ -139,20 +128,17 @@ class NonogramConstraint(Constraint):
         """
         Check if a complete assignment matches the clue exactly.
         """
-        # TODO: Implement Here! (complete the logic for matching the clue)
 
-        # Convert values to list of 0/1 (None should not exist in complete assignment)
+
         processed_values = []
         for v in values:
             if v is None:
-                return False  # Incomplete assignment
+                return False
             processed_values.append(v)
 
-        # If no clue, all cells should be empty (0)
         if not self.clue:
             return all(v == 0 for v in processed_values)
 
-        # Find consecutive blocks of 1s
         blocks = []
         current_block = 0
 
@@ -163,9 +149,7 @@ class NonogramConstraint(Constraint):
                 blocks.append(current_block)
                 current_block = 0
 
-        # Don't forget the last block
         if current_block > 0:
             blocks.append(current_block)
 
-        # Check if blocks match the clue
         return blocks == self.clue
