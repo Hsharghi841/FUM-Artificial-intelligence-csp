@@ -86,43 +86,34 @@ class NonogramProblem(Problem):
         self._create_grid_and_constraints(row_clues, column_clues)
 
     def _create_grid_and_constraints(self, row_clues, column_clues):
-        """Create the grid variables and constraints."""
-        # TODO: Implement Here!
 
-        # Step 1: Create the grid of variables
+
         self.grid = []
         for row in range(self.rows):
             row_vars = []
             for col in range(self.cols):
-                # Create a variable for each cell with domain [0, 1]
-                # 0 = empty, 1 = filled
+
                 var = Variable([0, 1], f"Cell_{row}_{col}")
                 row_vars.append(var)
             self.grid.append(row_vars)
 
-        # Flatten the grid to get all variables
         self.variables = [cell for row in self.grid for cell in row]
 
-        # Step 2: Create row constraints
         row_constraints = []
         for row in range(self.rows):
             row_vars = self.grid[row]
             constraint = NonogramConstraint(row_vars, row_clues[row])
             row_constraints.append(constraint)
 
-        # Step 3: Create column constraints
         column_constraints = []
         for col in range(self.cols):
             col_vars = [self.grid[row][col] for row in range(self.rows)]
             constraint = NonogramConstraint(col_vars, column_clues[col])
             column_constraints.append(constraint)
 
-        # Step 4: Combine all constraints
         self.constraints = row_constraints + column_constraints
 
-        # Step 5: Calculate neighbors (this will be done by parent class)
-        # Parent Problem.__init__ already calls calculate_neighbors()
-        # But we need to call it again since we just created variables
+
         self.calculate_neighbors()
 
         print(f"Created {len(self.variables)} variables and {len(self.constraints)} constraints")
