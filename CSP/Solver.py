@@ -354,13 +354,13 @@ class FastNonogramSolver:
             """Calculate constraint score - higher means more constrained"""
             #TODO: Implement Here!
             score = 0
-            related_constraints = self.problem.get_constraints(var) 
-            
-            for constraint in related_constraints:
-                current_line_values = [v.value for v in constraint.variables]
-                unassigned_count = current_line_values.count(None)
-                
-                score -= unassigned_count
+            related = self.problem.get_constraints(var)
+            for c in related:
+                score += 1  # var appears in this constraint
+                if not c.is_satisfied():
+                    score += 1  # constraint still unresolved → var more critical
+
+            return score
         
         # Sort by most constrained (highest score)
         return max(unassigned, key=constraint_score)
