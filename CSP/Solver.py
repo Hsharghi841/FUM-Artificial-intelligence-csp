@@ -266,8 +266,8 @@ class FastNonogramSolver:
         # Find cells that are the same in ALL valid lines
         for i in range(n):
             #TODO: Implement Here!
-            if all((s[i] for s in valid_lines)): definite_filled.union(i) 
-            if not any((s[i] for s in valid_lines)):definite_empty.union(i) 
+            if all((s[i] for s in valid_lines)): definite_filled.add(i) 
+            if not any((s[i] for s in valid_lines)):definite_empty.add(i) 
         
         return definite_filled, definite_empty
     
